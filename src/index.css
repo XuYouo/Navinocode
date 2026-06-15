@@ -121,6 +121,12 @@
   @apply rounded-2xl bg-white/30 dark:bg-black/20 backdrop-blur-xl border border-white/20 dark:border-black/20 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 focus:outline-none;
 }
 
+.main-search-input {
+  transition-property: padding-left, padding-right, background-color, border-color, color;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .apple-card {
   @apply rounded-3xl bg-white/20 dark:bg-black/20 backdrop-blur-2xl border border-white/10 dark:border-black/10 shadow-xl;
 }

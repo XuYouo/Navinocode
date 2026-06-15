@@ -835,7 +835,7 @@ const Index = () => {
                   ref={searchInputRef}
                   type="text"
                   placeholder={isSearchFocused ? '' : hitokoto}
-                  className={`w-full py-7 text-lg rounded-2xl shadow-lg focus:ring-2 focus:ring-blue-500/30 focus:outline-none apple-input transition-all duration-200 ${
+                  className={`w-full py-7 text-lg rounded-2xl shadow-lg apple-input main-search-input focus:!ring-0 focus:!ring-offset-0 focus:!outline-none focus-visible:!ring-0 focus-visible:!ring-offset-0 focus-visible:!outline-none ${
                     isSearchFocused ? 'pl-14 pr-16 text-left' : 'pl-4 pr-4 text-center placeholder:text-center'
                   }`}
                   value={searchValue}
