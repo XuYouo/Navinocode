@@ -31,6 +31,7 @@ const DEFAULT_APPS = [
   { id: 5, name: 'Qwen', url: 'https://chat.qwen.ai/', icon: localSvg('qwen') },
   { id: 6, name: 'Z.ai', url: 'https://chat.z.ai/', icon: localSvg('zai') },
   { id: 7, name: 'DeepSeek', url: 'https://chat.deepseek.com/', icon: localSvg('deepseek') },
+  { id: 8, name: '豆包', url: 'https://www.doubao.com/chat/', icon: localSvg('doubao') },
 ];
 
 const LEGACY_DEFAULT_APPS = [
@@ -63,6 +64,16 @@ const INTERMEDIATE_DEFAULT_APPS = [
   { name: 'DeepSeek', url: 'https://chat.deepseek.com/', icon: localSvg('deepseek') },
 ];
 
+const PRE_DOUBAO_DEFAULT_APPS = [
+  { name: 'GitHub', url: 'https://github.com', icon: localSvg('github') },
+  { name: 'bilibili', url: 'https://www.bilibili.com', icon: localSvg('bilibili') },
+  { name: 'Blog', url: 'https://lover.nyc.mn', icon: '/icons/blog.png' },
+  { name: 'Gmail', url: 'https://mail.google.com', icon: logoUrl('mail.google.com') },
+  { name: 'Qwen', url: 'https://chat.qwen.ai/', icon: localSvg('qwen') },
+  { name: 'Z.ai', url: 'https://chat.z.ai/', icon: localSvg('zai') },
+  { name: 'DeepSeek', url: 'https://chat.deepseek.com/', icon: localSvg('deepseek') },
+];
+
 const isMatchingDefaultApps = (apps, defaults) => (
   Array.isArray(apps) &&
   apps.length === defaults.length &&
@@ -75,7 +86,8 @@ const isMatchingDefaultApps = (apps, defaults) => (
 const shouldMigrateDefaultApps = (apps) => (
   isMatchingDefaultApps(apps, LEGACY_DEFAULT_APPS) ||
   isMatchingDefaultApps(apps, PREVIOUS_DEFAULT_APPS) ||
-  isMatchingDefaultApps(apps, INTERMEDIATE_DEFAULT_APPS)
+  isMatchingDefaultApps(apps, INTERMEDIATE_DEFAULT_APPS) ||
+  isMatchingDefaultApps(apps, PRE_DOUBAO_DEFAULT_APPS)
 );
 
 const Index = () => {
