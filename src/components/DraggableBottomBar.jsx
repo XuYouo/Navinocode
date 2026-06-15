@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { recordUsageEvent } from '@/lib/usageEvents';
 import AppSelector from '@/components/AppSelector';
-import { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem, ContextMenuSeparator } from '@/components/ui/context-menu';
+import { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem } from '@/components/ui/context-menu';
 import EditAppDialog from '@/components/EditAppDialog';
 import { computeAppLetter } from '@/lib/utils';
 
@@ -705,10 +705,10 @@ const DraggableBottomBar = ({ apps, setApps, maxBottomApps = 8 }) => {
                 </div>
               </Button>
                 </ContextMenuTrigger>
-                <ContextMenuContent className="rounded-2xl shadow-lg border bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm p-1 min-w-[10rem]">
-                  <ContextMenuItem className="rounded-xl px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700" onSelect={() => { setEditApp(app); setIsEditOpen(true); suppressNativeContextRef.current = true; }}>编辑</ContextMenuItem>
-                  <ContextMenuSeparator />
-                  <ContextMenuItem className="rounded-xl px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400" onSelect={() => {
+                <ContextMenuContent className="w-48 p-2 apple-popover">
+                  <div className="grid gap-1">
+                    <ContextMenuItem className="h-auto rounded-xl px-3 py-2 text-sm transition-all hover:bg-gray-50/60 focus:bg-gray-50/60 dark:hover:bg-gray-700/10 dark:focus:bg-gray-700/10" onSelect={() => { setEditApp(app); setIsEditOpen(true); suppressNativeContextRef.current = true; }}>编辑</ContextMenuItem>
+                    <ContextMenuItem className="h-auto rounded-xl px-3 py-2 text-sm text-red-600 transition-all hover:bg-gray-50/60 focus:bg-gray-50/60 dark:text-red-400 dark:hover:bg-gray-700/10 dark:focus:bg-gray-700/10" onSelect={() => {
                     // 从全部应用中删除该项；若该项在底栏内，同时减少 bottomCount
                     setApps((prev) => prev.filter((a) => a.id !== app.id));
                     setBottomCount((v) => {
@@ -719,6 +719,7 @@ const DraggableBottomBar = ({ apps, setApps, maxBottomApps = 8 }) => {
                     });
                     suppressNativeContextRef.current = true;
                   }}>删除</ContextMenuItem>
+                  </div>
                 </ContextMenuContent>
               </ContextMenu>
             ))}
