@@ -18,6 +18,10 @@ const DraggableBottomBar = ({ apps, setApps, maxBottomApps = 8 }) => {
   const [isCompleting, setIsCompleting] = useState(false); // 新增：正在完成拖拽动画
   const [completingIndex, setCompletingIndex] = useState(null); // 正在完成动画的元素索引
   const [suppressTransition, setSuppressTransition] = useState(false); // 完成阶段后的瞬间禁用过渡，避免二次飞行
+  const [viewportWidth, setViewportWidth] = useState(() => {
+    if (typeof window === 'undefined') return 1024;
+    return window.innerWidth;
+  });
 
   // Dock hover animation states
   const [hoveredIndex, setHoveredIndex] = useState(null);
@@ -34,7 +38,7 @@ const DraggableBottomBar = ({ apps, setApps, maxBottomApps = 8 }) => {
       const saved = localStorage.getItem('bottomCount');
       if (saved != null) {
         const val = parseInt(saved, 10);
-        if (!Number.isNaN(val)) return Math.max(0, Math.min(val, maxBottomApps));
+        if (!Number.isNaN(val)) return Math.max(0, Math.min(val, apps.length, maxBottomApps));
       }
     } catch {}
     return Math.min(apps.length, maxBottomApps);
@@ -56,13 +60,28 @@ const DraggableBottomBar = ({ apps, setApps, maxBottomApps = 8 }) => {
     document.addEventListener('contextmenu', handler, true);
     return () => document.removeEventListener('contextmenu', handler, true);
   }, []);
+
+  useEffect(() => {
+    const handleResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   const actualBottomApps = bottomApps.length;
-  const iconSize = 48; // 减小图标大小从64到48
-  const iconSpacing = 6; // 减小图标间距从8到6
-  const containerWidth = (actualBottomApps + 1) * iconSize + (actualBottomApps + 1 - 1) * iconSpacing;
-  const cardExtraPadding = 24; // 减小容器内边距
-  const overflowGuard = 8; // 减小预留空间
+  const dockItemCount = actualBottomApps + 1;
+  const maxDockWidth = Math.max(0, viewportWidth - 32);
+  const desiredIconSize = 48;
+  const desiredIconSpacing = 6;
+  const desiredDockWidth = dockItemCount * desiredIconSize + Math.max(0, dockItemCount - 1) * desiredIconSpacing + 24;
+  const isCompactDock = maxDockWidth < desiredDockWidth;
+  const dockPadding = isCompactDock ? 8 : 12;
+  const iconSpacing = isCompactDock ? (maxDockWidth < 340 ? 3 : 4) : desiredIconSpacing;
+  const availableForItems = Math.max(0, maxDockWidth - dockPadding * 2);
+  const fittedIconSize = Math.floor((availableForItems - Math.max(0, dockItemCount - 1) * iconSpacing) / dockItemCount);
+  const iconSize = Math.max(24, Math.min(desiredIconSize, fittedIconSize || desiredIconSize));
+  const iconVisualSize = Math.max(20, Math.min(40, iconSize - 8));
+  const containerWidth = dockItemCount * iconSize + Math.max(0, dockItemCount - 1) * iconSpacing;
+  const dockWidth = Math.min(maxDockWidth, containerWidth + dockPadding * 2);
 
   // 计算每个元素在拖拽/落位过程中应该显示的位置
   const getItemTransform = (index) => {
@@ -100,6 +119,7 @@ const DraggableBottomBar = ({ apps, setApps, maxBottomApps = 8 }) => {
   };
 
   const getIconColor = (iconName) => {
+    const key = String(iconName || '').toLowerCase();
     const colorMap = {
       gmail: 'bg-red-500',
       youtube: 'bg-red-600',
@@ -109,8 +129,21 @@ const DraggableBottomBar = ({ apps, setApps, maxBottomApps = 8 }) => {
       instagram: 'bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500',
       linkedin: 'bg-blue-700',
       reddit: 'bg-orange-500',
+      bilibili: 'bg-blue-500',
+      blog: 'bg-emerald-600',
+      qwen: 'bg-teal-600',
+      zai: 'bg-zinc-900',
+      deepseek: 'bg-blue-600',
     };
-    return colorMap[iconName] || 'bg-gray-500';
+    if (colorMap[key]) return colorMap[key];
+    if (key.includes('github')) return colorMap.github;
+    if (key.includes('bilibili')) return colorMap.bilibili;
+    if (key.includes('lover.nyc.mn') || key.includes('blog')) return colorMap.blog;
+    if (key.includes('gmail') || key.includes('google')) return colorMap.gmail;
+    if (key.includes('qwen')) return colorMap.qwen;
+    if (key.includes('z.ai') || key.includes('zai')) return colorMap.zai;
+    if (key.includes('deepseek')) return colorMap.deepseek;
+    return 'bg-gray-500';
   };
 
   // Dock hover animation handlers
@@ -552,12 +585,19 @@ const DraggableBottomBar = ({ apps, setApps, maxBottomApps = 8 }) => {
 
   return (
     <div className="py-6">
-      <div className="mx-auto px-4">
-  <div className="apple-card p-3 mx-auto transition-all duration-300 ease-in-out" style={{ width: `${containerWidth + cardExtraPadding + overflowGuard}px`, maxWidth: '90vw' }}>
+      <div className="mx-auto max-w-full px-4">
+  <div
+    className="apple-card mx-auto transition-all duration-300 ease-in-out"
+    style={{
+      width: `${dockWidth}px`,
+      maxWidth: 'calc(100vw - 2rem)',
+      padding: `${dockPadding}px`,
+    }}
+  >
           <div
             ref={containerRef}
             className="flex justify-center mx-auto"
-            style={{ width: 'fit-content' }}
+            style={{ width: `${containerWidth}px`, gap: `${iconSpacing}px`, maxWidth: '100%' }}
             onMouseLeave={handleMouseLeave}
           >
             {bottomApps.map((app, index) => (
@@ -566,10 +606,13 @@ const DraggableBottomBar = ({ apps, setApps, maxBottomApps = 8 }) => {
               <Button
                 key={app.id}
                 variant="ghost"
-                className={`flex flex-col items-center justify-center p-1 h-auto rounded-2xl transition-all duration-200 mx-0.5 relative group hover:bg-transparent hover:text-transparent focus:bg-transparent focus:text-transparent active:bg-transparent active:text-transparent ${
+                className={`flex shrink-0 flex-col items-center justify-center p-0 rounded-2xl transition-all duration-200 relative group hover:bg-transparent hover:text-transparent focus:bg-transparent focus:text-transparent active:bg-transparent active:text-transparent ${
                   isDragging && index === dragIndex ? 'z-50' : ''
                 }`}
                 style={{
+                  width: `${iconSize}px`,
+                  minWidth: `${iconSize}px`,
+                  height: `${iconSize}px`,
                   transform: isDragging && index === dragIndex
                     ? `translate(${dragOffset.x}px, ${dragOffset.y}px) scale(1.1) rotate(3deg)`
                     : isCompleting && index === dragIndex
@@ -588,7 +631,8 @@ const DraggableBottomBar = ({ apps, setApps, maxBottomApps = 8 }) => {
                   backgroundColor: 'transparent',
                   boxShadow: 'none',
                   border: 'none',
-                  outline: 'none'
+                  outline: 'none',
+                  transformOrigin: 'bottom center',
                 }}
                 onMouseDown={(e) => handleMouseDown(e, index)}
                 onTouchStart={(e) => handleTouchStart(e, index)}
@@ -599,14 +643,18 @@ const DraggableBottomBar = ({ apps, setApps, maxBottomApps = 8 }) => {
               >
                 {(() => {
                   const ic = app.icon || '';
-                  const isUrlLike = /^https?:\/\//i.test(ic) || ic.startsWith('data:');
+                  const isUrlLike = /^https?:\/\//i.test(ic) || ic.startsWith('data:') || ic.startsWith('/');
+                  const shouldFillIcon = ic === '/icons/blog.png';
                   if (isUrlLike) {
                     return (
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/90 dark:bg-black/30 overflow-hidden">
+                      <div
+                        className="rounded-xl flex items-center justify-center bg-white/90 dark:bg-black/30 overflow-hidden"
+                        style={{ width: `${iconVisualSize}px`, height: `${iconVisualSize}px` }}
+                      >
                         <img
                           src={ic}
                           alt={app.name}
-                          className="w-full h-full object-cover"
+                          className={shouldFillIcon ? 'w-full h-full object-cover' : 'w-full h-full object-contain p-1'}
                           referrerPolicy="no-referrer"
                           onError={(e) => {
                             // 先尝试备用 favicon 源（Google s2），再退回字母块
@@ -615,7 +663,7 @@ const DraggableBottomBar = ({ apps, setApps, maxBottomApps = 8 }) => {
                               try {
                                 const hostname = new URL(app.url).hostname;
                                 imgEl.dataset.fallbackTried = '1';
-                                imgEl.src = `https://www.google.com/s2/favicons?domain=${hostname}&sz=48`;
+                                imgEl.src = `https://www.google.com/s2/favicons?domain=${hostname}&sz=128`;
                                 return;
                               } catch {}
                             }
@@ -635,7 +683,10 @@ const DraggableBottomBar = ({ apps, setApps, maxBottomApps = 8 }) => {
                   }
                   // 关键字或空：渲染字母块
                   return (
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${getIconColor(app.icon)} text-white`}>
+                    <div
+                      className={`rounded-xl flex items-center justify-center ${getIconColor(app.icon)} text-white`}
+                      style={{ width: `${iconVisualSize}px`, height: `${iconVisualSize}px` }}
+                    >
                       <span className="font-bold text-xs">{computeAppLetter(app)}</span>
                     </div>
                   );
@@ -671,7 +722,14 @@ const DraggableBottomBar = ({ apps, setApps, maxBottomApps = 8 }) => {
                 </ContextMenuContent>
               </ContextMenu>
             ))}
-            <AppSelector apps={apps} setApps={setApps} triggerRef={selectorTriggerRef} dropHighlight={isDragging && overSelector} />
+            <AppSelector
+              apps={apps}
+              setApps={setApps}
+              triggerRef={selectorTriggerRef}
+              dropHighlight={isDragging && overSelector}
+              dockItemSize={iconSize}
+              dockIconSize={iconVisualSize}
+            />
           </div>
   </div>
   <EditAppDialog isOpen={isEditOpen} setIsOpen={setIsEditOpen} app={editApp} setApps={setApps} />

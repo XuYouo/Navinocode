@@ -7,7 +7,7 @@ import EditAppDialog from '@/components/EditAppDialog';
 import AddAppDialog from '@/components/AddAppDialog';
 import { computeAppLetter } from '@/lib/utils';
 
-const AppSelector = ({ apps, setApps, triggerRef = null, dropHighlight = false }) => {
+const AppSelector = ({ apps, setApps, triggerRef = null, dropHighlight = false, dockItemSize = 48, dockIconSize = 48 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isAddAppOpen, setIsAddAppOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -471,6 +471,7 @@ const AppSelector = ({ apps, setApps, triggerRef = null, dropHighlight = false }
   };
 
   const getIconColor = (iconName) => {
+    const key = String(iconName || '').toLowerCase();
     const colorMap = {
       gmail: 'bg-red-500',
       youtube: 'bg-red-600',
@@ -480,8 +481,21 @@ const AppSelector = ({ apps, setApps, triggerRef = null, dropHighlight = false }
       instagram: 'bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500',
       linkedin: 'bg-blue-700',
       reddit: 'bg-orange-500',
+      bilibili: 'bg-blue-500',
+      blog: 'bg-emerald-600',
+      qwen: 'bg-teal-600',
+      zai: 'bg-zinc-900',
+      deepseek: 'bg-blue-600',
     };
-    return colorMap[iconName] || 'bg-gray-500';
+    if (colorMap[key]) return colorMap[key];
+    if (key.includes('github')) return colorMap.github;
+    if (key.includes('bilibili')) return colorMap.bilibili;
+    if (key.includes('lover.nyc.mn') || key.includes('blog')) return colorMap.blog;
+    if (key.includes('gmail') || key.includes('google')) return colorMap.gmail;
+    if (key.includes('qwen')) return colorMap.qwen;
+    if (key.includes('z.ai') || key.includes('zai')) return colorMap.zai;
+    if (key.includes('deepseek')) return colorMap.deepseek;
+    return 'bg-gray-500';
   };
 
   return (
@@ -491,16 +505,22 @@ const AppSelector = ({ apps, setApps, triggerRef = null, dropHighlight = false }
       <Button
             ref={triggerRef}
             variant="ghost"
-            className="group relative flex h-auto w-12 shrink-0 flex-col items-center justify-center rounded-none bg-transparent p-0 transition-transform duration-200 ease-out will-change-transform focus-visible:ring-0 focus-visible:ring-offset-0 hover:bg-transparent dark:hover:bg-transparent"
+            className="group relative flex shrink-0 flex-col items-center justify-center rounded-none bg-transparent p-0 transition-transform duration-200 ease-out will-change-transform focus-visible:ring-0 focus-visible:ring-offset-0 hover:bg-transparent dark:hover:bg-transparent"
             style={{
+        width: `${dockItemSize}px`,
+        minWidth: `${dockItemSize}px`,
+        height: `${dockItemSize}px`,
         transform: dropHighlight ? 'scale(1.06)' : 'scale(1)',
         transformOrigin: 'bottom center',
         boxShadow: dropHighlight ? '0 0 0 3px rgba(59,130,246,0.25)' : 'none',
         transition: 'transform 140ms ease, box-shadow 140ms ease'
             }}
           >
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-1 bg-gray-200/50 dark:bg-gray-700/30 text-gray-700 dark:text-gray-300">
-              <Grid3X3 size={24} />
+            <div
+              className="rounded-2xl flex items-center justify-center bg-gray-200/50 dark:bg-gray-700/30 text-gray-700 dark:text-gray-300"
+              style={{ width: `${dockIconSize}px`, height: `${dockIconSize}px` }}
+            >
+              <Grid3X3 size={Math.max(16, Math.min(24, dockIconSize * 0.5))} />
             </div>
           </Button>
         </DialogTrigger>
@@ -570,14 +590,15 @@ const AppSelector = ({ apps, setApps, triggerRef = null, dropHighlight = false }
                 >
                   {(() => {
                     const ic = app.icon || '';
-                    const isUrlLike = /^https?:\/\//i.test(ic) || ic.startsWith('data:');
+                    const isUrlLike = /^https?:\/\//i.test(ic) || ic.startsWith('data:') || ic.startsWith('/');
+                    const shouldFillIcon = ic === '/icons/blog.png';
                     if (isUrlLike) {
                       return (
                         <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-2 bg-white/90 dark:bg-black/30 overflow-hidden">
                           <img
                             src={ic}
                             alt={app.name}
-                            className="w-full h-full object-cover"
+                            className={shouldFillIcon ? 'w-full h-full object-cover' : 'w-full h-full object-contain p-1'}
                             referrerPolicy="no-referrer"
                             onError={(e) => {
                               const imgEl = e.currentTarget;
@@ -585,7 +606,7 @@ const AppSelector = ({ apps, setApps, triggerRef = null, dropHighlight = false }
                                 try {
                                   const hostname = new URL(app.url).hostname;
                                   imgEl.dataset.fallbackTried = '1';
-                                  imgEl.src = `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
+                                  imgEl.src = `https://www.google.com/s2/favicons?domain=${hostname}&sz=128`;
                                   return;
                                 } catch {}
                               }
