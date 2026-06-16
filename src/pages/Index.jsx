@@ -27,7 +27,7 @@ const DEFAULT_APPS = [
   { id: 1, name: 'GitHub', url: 'https://github.com', icon: localSvg('github') },
   { id: 2, name: 'bilibili', url: 'https://www.bilibili.com', icon: localSvg('bilibili') },
   { id: 3, name: 'Blog', url: 'https://lover.nyc.mn', icon: '/icons/blog.png' },
-  { id: 4, name: 'Gmail', url: 'https://mail.google.com', icon: logoUrl('mail.google.com') },
+  { id: 4, name: 'Gmail', url: 'https://mail.google.com', icon: localSvg('gmail') },
   { id: 5, name: 'Qwen', url: 'https://chat.qwen.ai/', icon: localSvg('qwen') },
   { id: 6, name: 'Z.ai', url: 'https://chat.z.ai/', icon: localSvg('zai') },
   { id: 7, name: 'DeepSeek', url: 'https://chat.deepseek.com/', icon: localSvg('deepseek') },
@@ -74,6 +74,17 @@ const PRE_DOUBAO_DEFAULT_APPS = [
   { name: 'DeepSeek', url: 'https://chat.deepseek.com/', icon: localSvg('deepseek') },
 ];
 
+const PRE_GMAIL_SVG_DEFAULT_APPS = [
+  { name: 'GitHub', url: 'https://github.com', icon: localSvg('github') },
+  { name: 'bilibili', url: 'https://www.bilibili.com', icon: localSvg('bilibili') },
+  { name: 'Blog', url: 'https://lover.nyc.mn', icon: '/icons/blog.png' },
+  { name: 'Gmail', url: 'https://mail.google.com', icon: logoUrl('mail.google.com') },
+  { name: 'Qwen', url: 'https://chat.qwen.ai/', icon: localSvg('qwen') },
+  { name: 'Z.ai', url: 'https://chat.z.ai/', icon: localSvg('zai') },
+  { name: 'DeepSeek', url: 'https://chat.deepseek.com/', icon: localSvg('deepseek') },
+  { name: '豆包', url: 'https://www.doubao.com/chat/', icon: localSvg('doubao') },
+];
+
 const isMatchingDefaultApps = (apps, defaults) => (
   Array.isArray(apps) &&
   apps.length === defaults.length &&
@@ -87,7 +98,8 @@ const shouldMigrateDefaultApps = (apps) => (
   isMatchingDefaultApps(apps, LEGACY_DEFAULT_APPS) ||
   isMatchingDefaultApps(apps, PREVIOUS_DEFAULT_APPS) ||
   isMatchingDefaultApps(apps, INTERMEDIATE_DEFAULT_APPS) ||
-  isMatchingDefaultApps(apps, PRE_DOUBAO_DEFAULT_APPS)
+  isMatchingDefaultApps(apps, PRE_DOUBAO_DEFAULT_APPS) ||
+  isMatchingDefaultApps(apps, PRE_GMAIL_SVG_DEFAULT_APPS)
 );
 
 const Index = () => {
@@ -1069,9 +1081,9 @@ const Index = () => {
             <Button
               variant="outline"
               size="icon"
-              className="fixed top-6 right-6 rounded-2xl w-14 h-14 apple-button z-10 transition-all duration-300 opacity-30 hover:opacity-100"
+              className="fixed top-6 right-6 rounded-full w-10 h-10 p-0 apple-button z-10 transition-all duration-300 opacity-30 hover:opacity-100"
             >
-              <Settings className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+              <Settings className="h-5 w-5 text-gray-700 dark:text-gray-300" />
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-md p-6 rounded-2xl apple-popover max-h-[80vh] flex flex-col w-[calc(100vw-2rem)] max-w-sm sm:max-w-md">
